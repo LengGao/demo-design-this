@@ -1,0 +1,156 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>this问题</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+  <script src="/javascripts/this.js" defer></script>
+
+</head>
+<body>
+  <center>
+    <h1>this</h1>
+    <center>
+      <h4>this根据作用域和是否采用严格模式可以分为以下情况</h4>
+      <p id='situation1'>
+          无论是否在严格模式下，在全局作用域（全局执行环境中）：this指向全局对象
+      </p>
+      <p id="situation2">
+        函数体内：严格模式下this === undefined，非严格 this === 函数当前执行上下文对象
+        闭包函数 严格 this === undefined
+        非严格  this === Window
+        <script>
+          var obj = {fn: function () {
+            console.log("obj",this) // fn
+          }}
+          var obj2 = {fn: function () {
+            console.log("obj2",this) // fn
+          }}
+          var obj3 = { fn: function () {
+            "use strict";
+            console.log("obj3",this) //  fn
+          }}
+          var fn = function () {
+            "use strict";
+            console.log("fn",this) // undefined
+          }
+          obj.fn();
+          obj2.fn();
+          obj3.fn();
+          fn();
+          document.write("2")
+        </script>
+      </p>
+      <p id="situation3">
+        不论是否在严格模式下，函数内作用域中或类，对象的全局中，类与对象中的this都指向对象或类的实例，
+        类的构造函数中，this 是一个常规对象。类中所有非静态的方法都会被添加到 this 的原型中：
+        注意：静态方法不是 this 的属性，它们只是类自身的属性。
+        <script>
+          "use strict";
+          var obj = {fn: function () {
+                console.log("obj",this) // fn
+              }}
+              obj.fn()
+          document.write("3")
+        </script>
+      </p>
+      <p id="situation4">
+        在阳饿模式下，事件处理函数中this指向目标事件对象
+        非阳饿模式下，this 指向函数全局
+        不过如果在dom 上onclick == xxx 则不论是否严格，this === target NodeList, e = MouseEvent
+        <button class="hand" onclick="handler();">严格 点击事件</button>
+        <button class="hand_" onclick="handler_();">非严格 点击事件</button>
+        <script>
+          var el = document.querySelector('.hand');
+          el.addEventListener("click",function (e) {
+            "use strict";
+              console.log('event hand',this,e ,this === e,);// undefined undefined true
+          })
+          function handler (e) {
+            "use strict";
+            console.log('event handler',this ,e,this === e);  // NodeList  MouseEvent false
+          }
+        </script>
+        <script>
+          var el = document.querySelector('.hand_');
+          el.addEventListener("click",function (e) {
+              console.log('event hand',this,e ,this === e,); //  Window undefined false
+          })
+          function handler_ (e) {
+            console.log('event handler',this ,e,this === e); // NodeList  MouseEvent false
+          }
+        </script>
+      </p>
+      <P id="situaltion4">
+        内联事件处理函数中的this:
+        在严格模式下，在内联事件处理函数中，有以下两种情况：
+        <button onclick="alert((function(){'use strict'; return this})());">
+          内联事件处理1
+          </button>
+          <!-- 警告窗口中的字符为undefined -->
+           
+          <button onclick="'use strict'; alert(this.tagName.toLowerCase());">
+          内联事件处理2
+          </button>
+          <!-- 警告窗口中的字符为button -->
+      </P>
+
+    </center>
+  </center>
+  <p>
+    与其他语言相比，函数的 this 关键字在 JavaScript 中的表现略有不同，此外，在严格模式和非严格模式之间也会有一些差别。
+    在绝大多数情况下，函数的调用方式决定了 this 的值（运行时绑定）。this 不能在执行期间被赋值，并且在每次函数被调用时 this 的值也可能会不同。ES5 引入了 bind 方法来设置函数的 this 值，而不用考虑函数如何被调用的。ES2015 引入了箭头函数，箭头函数不提供自身的 this 绑定（this 的值将保持为闭合词法上下文的值）。
+  </p>
+    <my-title ti="闭包中使用：">
+      不只是闭包所有的：所有的函数原则上是在运行时谁调用的它，this就指向谁，因为this的本质是指明函数（还包括global,eval）当前的执行上下文
+      但是将头函数除外
+      严格模式下 this指向全局的会指向Undefined
+      Note: 你可以使用 globalThis 获取全局对象，无论你的代码是否在当前上下文运行。
+    </my-title>
+    <div>
+      <div>
+        例子：
+        <p>
+      const test = {
+        prop: 42,
+        func: function() {
+          return this.prop;
+        },
+      };
+      var jian = (e => {console.log("this",this)})
+      jian()
+      var obj = {
+        jian2: (e => {console.log("this2",this)}),
+          fn: function () {
+          console.log("fn",this)
+          }
+      }
+      var fn = obj.jian2;
+      var fn3 = obj.fn;
+      var fn2 = {
+        jian: obj.jian2,
+          fn: obj.fn
+      }
+      fn();
+      fn2.jian();
+      obj.jian2();
+      fn3();
+      fn2.fn()
+      console.log(test.func());
+      // expected output: 42
+    </p>
+    </div>
+    <div>输出结果为：
+      <p>> "this" [object Window]
+        > "this2" [object Window]
+        > "this2" [object Window]
+        > "this2" [object Window]
+        > "fn" [object Window]
+        > "fn" Object { jian: e => {console.log("this2",this)}, fn: function () {
+            console.log("fn",this)
+            } }
+        > 42</p>
+    </div>
+</body>
+</html>
